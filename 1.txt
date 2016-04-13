@@ -1,0 +1,325 @@
+<application context-root="worklightadmin" id="worklight-management-service" location="worklightadmin.war" name="WorklightServices" type="war">
+
+
+        <application-bnd>
+
+
+            <security-role name="worklightadmin">
+
+
+                <user name="${env.MFPF_ADMIN_USERNAME}"/>
+
+
+            </security-role>
+
+
+                <security-role name="worklightdeployer">
+
+
+                <user name="deployer"/>
+
+
+            </security-role>
+
+
+                <security-role name="worklightmonitor">
+
+
+                <user name="monitor"/>
+
+
+            </security-role>
+
+
+                <security-role name="worklightoperator">
+
+
+                <user name="operator"/>
+
+
+            </security-role>
+
+
+        </application-bnd>
+
+
+        <classloader delegation="parentLast">
+
+
+            <privateLibrary>
+
+
+                <fileset dir="${wlp.install.dir}/lib" includes="com.ibm.ws.crypto.passwordutil*.jar"/>
+
+
+            </privateLibrary>
+
+
+        </classloader>
+
+
+    </application>
+
+
+       
+
+
+    <!--   Declare the IBM MobileFirst Admin Console application.  -->
+
+
+    
+
+
+    <application context-root="worklightconsole" id="worklight-management-ui" location="worklightconsole.war" name="WorklightConsole" type="war">
+
+
+        <application-bnd>
+
+
+            <security-role name="worklightadmin">
+
+
+                <user name="${env.MFPF_ADMIN_USERNAME}"/>
+
+
+            </security-role>
+
+
+                <security-role name="worklightdeployer">
+
+
+                <user name="deployer"/>
+
+
+            </security-role>
+
+
+                <security-role name="worklightmonitor">
+
+
+                <user name="monitor"/>
+
+
+            </security-role>
+
+
+                <security-role name="worklightoperator">
+
+
+                <user name="operator"/>
+
+
+            </security-role>
+
+
+        </application-bnd>
+
+
+    </application>
+
+
+
+    <!--   Declare the IBM MobileFirst Analytics Services application. -->
+
+
+
+    <application context-root="analytics-service" id="analytics-service" location="analytics-service.war" name="AnalyticsServices" type="war">
+
+
+        <application-bnd>
+
+
+            <security-role name="worklightadmin">
+
+
+                <user name="${env.MFPF_ADMIN_USERNAME}"/>
+
+
+            </security-role>
+
+
+                <security-role name="worklightdeployer">
+
+
+                <user name="deployer"/>
+
+
+            </security-role>
+
+
+                <security-role name="worklightmonitor">
+
+
+                <user name="monitor"/>
+
+
+            </security-role>
+
+
+                <security-role name="worklightoperator">
+
+
+                <user name="operator"/>
+
+
+            </security-role>
+
+
+        </application-bnd>
+
+
+    </application>
+
+
+
+    <!--  Declare the IBM MobileFirst Analytics Console application.  -->
+
+
+    
+
+
+    <application context-root="analytics" id="analytics" location="analytics.war" name="AnalyticsUI" type="war">
+
+
+        <application-bnd>
+
+
+            <security-role name="worklightadmin">
+
+
+                <user name="${env.MFPF_ADMIN_USERNAME}"/>
+
+
+            </security-role>
+
+
+                <security-role name="worklightdeployer">
+
+
+                <user name="deployer"/>
+
+
+            </security-role>
+
+
+                <security-role name="worklightmonitor">
+
+
+                <user name="monitor"/>
+
+
+            </security-role>
+
+
+                <security-role name="worklightoperator">
+
+
+                <user name="operator"/>
+
+
+            </security-role>
+
+
+        </application-bnd>
+
+
+    </application>
+
+
+   
+
+
+    <library id="DerbyLib">
+
+
+        <fileset dir="${shared.resource.dir}/derby" includes="derby.jar"/>
+
+
+    </library>
+
+
+ 
+
+
+    <!--  Declare the IBM MobileFirst Console admin database.    -->
+
+
+    
+
+
+    <dataSource jndiName="worklightadmin/jdbc/WorklightAdminDS" transactional="false">
+
+
+        <jdbcDriver libraryRef="DerbyLib"/>
+
+
+        <properties.derby.embedded createDatabase="create" databaseName="${shared.resource.dir}/derbyDB/WLADMIN" user="WLADMINISTRATOR"/>
+
+
+    </dataSource>
+
+
+
+    <application id="_MobileBrowserSimulator" location="_MobileBrowserSimulator.war" name="_MobileBrowserSimulator" type="war"/>
+
+
+
+    <jndiEntry jndiName="wl.analytics.url" value="http://localhost:9080/analytics-service/v2"/>
+
+
+
+    <jndiEntry jndiName="wl.analytics.console.url" value="../analytics/console"/>
+
+
+
+    <jndiEntry jndiName="wl.analytics.username" value="${env.MFPF_ADMIN_USERNAME}"/>
+
+
+
+    <jndiEntry jndiName="wl.analytics.password" value="${env.MFPF_ADMIN_PASSWORD}"/>
+
+
+    
+
+
+    <jndiEntry jndiName="wl.analytics.queues" value="1"/>
+
+
+    
+
+
+    <jndiEntry jndiName="wl.analytics.queue.size" value="1"/>
+
+
+    
+
+
+    <jndiEntry jndiName="wl.analytics.logs.forward" value="true"/>
+
+
+
+    <jndiEntry jndiName="analytics/warmupFrequencyInSeconds" value="0"/>
+
+
+    
+
+
+    <jndiEntry jndiName="mfp.session.independent" value="false"/>
+
+
+    
+
+
+    <jndiEntry jndiName="development.mode" value="true"/>
+
+
+        
+
+
+    <webAppSecurity ssoUseDomainFromURL="true" />
+
+
+    <ltpa keysFileName="/opt/ibm/wlp/usr/servers/registerServer/resources/security/ltpa.keys" />  
+
+
+</server> 

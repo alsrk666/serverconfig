@@ -1,0 +1,642 @@
+<!-- Licensed Materials - Property of IBM 5725-I43 (C) Copyright IBM Corp.
+
+
+  2015, 2015. All Rights Reserved. US Government Users Restricted Rights -
+
+
+  Use, duplication or disclosure restricted by GSA ADP Schedule Contract with
+
+
+  IBM Corp. -->
+
+
+ <server description="worklight">
+
+
+
+    <featureManager>
+
+
+        <feature>servlet-3.0</feature>
+
+
+        <feature>jndi-1.0</feature>
+
+
+        <feature>jdbc-4.0</feature>
+
+
+        <feature>localConnector-1.0</feature>
+
+
+        <feature>restConnector-1.0</feature>
+
+
+        <feature>jsp-2.2</feature>
+
+
+        <feature>ssl-1.0</feature>
+
+
+
+        <feature>jaxrs-1.1</feature>
+
+
+        <feature>appSecurity-2.0</feature>
+
+
+        <feature>usr:OAuthTai-1.0</feature>
+
+
+    </featureManager>
+
+
+
+    <webContainer invokeFlushAfterService="false"/>
+
+
+    <webContainer com.ibm.ws.webcontainer.suppressLoggingServiceRuntimeExcep="true"/>
+
+
+    <webContainer deferServletLoad="false"/>
+
+
+
+    <httpEndpoint host="*" httpPort="9080" httpsPort="9443" id="defaultHttpEndpoint">
+
+
+        <tcpOptions soReuseAddr="true"/>
+
+
+    </httpEndpoint>
+
+
+
+    <!-- enable next element for Worklight Server traces. 
+
+
+         change traceSpecification to enable fine grain printing to trace.log file. 
+
+
+    <logging traceSpecification="*=info:com.worklight.*=all:com.ibm.worklight.*=all:com.ibm.imf.services.cloudant.*=all"/>
+
+
+    -->
+
+
+
+    <!-- OAuth Configuration -->
+
+
+    <usr_OAuthTAI id="myOAuthTAI" cacheSize="1000">
+
+
+        <securityConstraint securedURLs="/datastore/*"
+
+
+        scope="cloudant"
+
+
+        httpMethods="All"/>
+
+
+    </usr_OAuthTAI>
+
+
+    
+
+
+    <application context-root="datastore" id="datastore" name="datastore" location="imf-data-proxy.war" type="war">
+
+
+        <application-bnd>
+
+
+            <security-role name="TAIUserRole">
+
+
+                <special-subject type="ALL_AUTHENTICATED_USERS" />
+
+
+            </security-role>
+
+
+        </application-bnd>
+
+
+        <classloader delegation="parentLast">
+
+
+            <commonLibrary id="worklightlib_datastore">
+
+
+                <fileset dir="${wlp.install.dir}/lib" includes="com.ibm.ws.crypto.passwordutil*.jar"/>
+
+
+            </commonLibrary>
+
+
+        </classloader>
+
+
+    </application>
+
+
+    
+
+
+    <!-- Declare the JNDI properties for the MobileFirst Data Proxy. -->
+
+
+    <jndiEntry jndiName="datastore/CloudantProxyDbAccount" value="${env.MFPF_CLOUDANTPROXY_ACCOUNT}"/>
+
+
+    <jndiEntry jndiName="datastore/CloudantProtocol" value="${env.MFPF_CLOUDANTPROXY_PROTOCOL}"/>
+
+
+    <jndiEntry jndiName="datastore/CloudantPort" value="&quot;${env.MFPF_CLOUDANTPROXY_PORT}&quot;"/>
+
+
+    <jndiEntry jndiName="datastore/CloudantProxyDbAccountUser" value="${env.MFPF_CLOUDANTPROXY_USER}"/>
+
+
+    <jndiEntry jndiName="datastore/CloudantProxyDbAccountPassword" value="${env.MFPF_CLOUDANTPROXY_PASSWORD}"/>
+
+
+
+    <applicationMonitor updateTrigger="mbean"/>
+
+
+
+    <!-- Thread pool  -->
+
+
+    <executor coreThreads="200" id="default" keepAlive="60s" maxThreads="400" name="LargeThreadPool" rejectedWorkPolicy="CALLER_RUNS" stealPolicy="STRICT"/>
+
+
+
+    <administrator-role>
+
+
+       <user>${env.MFPF_ADMIN_USERNAME}</user>
+
+
+    </administrator-role>
+
+
+
+    <keyStore id="defaultKeyStore" password="worklight"/>
+
+
+
+    <jndiEntry jndiName="ibm.worklight.admin.jmx.host" value="localhost"/>
+
+
+    <jndiEntry jndiName="ibm.worklight.admin.jmx.port" value="9443"/>
+
+
+    <jndiEntry jndiName="ibm.worklight.topology.platform" value="Liberty"/>
+
+
+    <jndiEntry jndiName="ibm.worklight.topology.clustermode" value="Standalone"/>
+
+
+
+    <basicRegistry id="worklight" realm="worklightRealm">
+
+
+        <user name="demo" password="demo"/>
+
+
+        <user name="monitor" password="demo"/>
+
+
+        <user name="deployer" password="demo"/>
+
+
+        <user name="operator" password="demo"/>
+
+
+        <user name="${env.MFPF_ADMIN_USERNAME}" password="${env.MFPF_ADMIN_PASSWORD}"/>
+
+
+    </basicRegistry>
+
+
+
+    <!--  JMX admin user JNDI entries  -->
+
+
+    <jndiEntry jndiName="ibm.worklight.admin.jmx.user" value="${env.MFPF_ADMIN_USERNAME}"/>
+
+
+
+    <jndiEntry jndiName="ibm.worklight.admin.jmx.pwd" value="${env.MFPF_ADMIN_PASSWORD}"/>
+
+
+
+    <!-- Disabling security integration    -->
+
+
+    <httpSession securityIntegrationEnabled="false"/>
+
+
+    
+
+
+    <!--   Declare the IBM MobileFirst Admin Services application. -->
+
+
+<application context-root="/MobileFirstApp" id="MobileFirstApp" location="MobileFirstApp.war" name="MobileFirstApp" type="war">
+
+        <classloader delegation="parentLast">
+
+            <privateLibrary id="worklightlib_MobileFirstApp">
+
+                <fileset dir="${shared.resource.dir}" includes="worklight-jee-library.jar"/>.
+
+                <fileset dir="${wlp.install.dir}/lib" includes="com.ibm.ws.crypto.passwordutil*.jar"/>
+
+            </privateLibrary>
+
+        </classloader>
+
+    </application>
+
+    <!-- Declare the IBM MobileFirst Server database. -->
+
+    <dataSource jndiName="MobileFirstApp/jdbc/WorklightDS" transactional="false">
+
+        <jdbcDriver libraryRef="DerbyLib"/>
+
+        <properties.derby.embedded createDatabase="create" databaseName="${shared.resource.dir}/derbyDB/MobileFirstApp/WRKLGHT" user="WORKLIGHT"/>
+
+    </dataSource>
+
+    <!-- Define any other IBM MobileFirst Server properties here -->
+
+    <jndiEntry value="false" jndiName="MobileFirstApp/mfp.session.independent"/>
+
+    <jndiEntry value="httpsession" jndiName="MobileFirstApp/mfp.attrStore.type"/>
+
+    
+
+    <application context-root="/DemoProj" id="DemoProj" location="DemoProj.war" name="DemoProj" type="war">
+
+        <classloader delegation="parentLast">
+
+            <privateLibrary id="worklightlib_DemoProj">
+
+                <fileset dir="${shared.resource.dir}" includes="worklight-jee-library.jar"/>.
+
+                <fileset dir="${wlp.install.dir}/lib" includes="com.ibm.ws.crypto.passwordutil*.jar"/>
+
+            </privateLibrary>
+
+        </classloader>
+
+    </application>
+
+    <!-- Declare the IBM MobileFirst Server database. -->
+
+    <dataSource jndiName="DemoProj/jdbc/WorklightDS" transactional="false">
+
+        <jdbcDriver libraryRef="DerbyLib"/>
+
+        <properties.derby.embedded createDatabase="create" databaseName="${shared.resource.dir}/derbyDB/DemoProj/WRKLGHT" user="WORKLIGHT"/>
+
+    </dataSource>
+
+    <!-- Define any other IBM MobileFirst Server properties here -->
+
+    <jndiEntry value="false" jndiName="DemoProj/mfp.session.independent"/>
+
+    <jndiEntry value="httpsession" jndiName="DemoProj/mfp.attrStore.type"/>
+
+    
+
+    <application context-root="worklightadmin" id="worklight-management-service" location="worklightadmin.war" name="WorklightServices" type="war">
+
+
+        <application-bnd>
+
+
+            <security-role name="worklightadmin">
+
+
+                <user name="${env.MFPF_ADMIN_USERNAME}"/>
+
+
+            </security-role>
+
+
+                <security-role name="worklightdeployer">
+
+
+                <user name="deployer"/>
+
+
+            </security-role>
+
+
+                <security-role name="worklightmonitor">
+
+
+                <user name="monitor"/>
+
+
+            </security-role>
+
+
+                <security-role name="worklightoperator">
+
+
+                <user name="operator"/>
+
+
+            </security-role>
+
+
+        </application-bnd>
+
+
+        <classloader delegation="parentLast">
+
+
+            <privateLibrary>
+
+
+                <fileset dir="${wlp.install.dir}/lib" includes="com.ibm.ws.crypto.passwordutil*.jar"/>
+
+
+            </privateLibrary>
+
+
+        </classloader>
+
+
+    </application>
+
+
+       
+
+
+    <!--   Declare the IBM MobileFirst Admin Console application.  -->
+
+
+    
+
+
+    <application context-root="worklightconsole" id="worklight-management-ui" location="worklightconsole.war" name="WorklightConsole" type="war">
+
+
+        <application-bnd>
+
+
+            <security-role name="worklightadmin">
+
+
+                <user name="${env.MFPF_ADMIN_USERNAME}"/>
+
+
+            </security-role>
+
+
+                <security-role name="worklightdeployer">
+
+
+                <user name="deployer"/>
+
+
+            </security-role>
+
+
+                <security-role name="worklightmonitor">
+
+
+                <user name="monitor"/>
+
+
+            </security-role>
+
+
+                <security-role name="worklightoperator">
+
+
+                <user name="operator"/>
+
+
+            </security-role>
+
+
+        </application-bnd>
+
+
+    </application>
+
+
+
+    <!--   Declare the IBM MobileFirst Analytics Services application. -->
+
+
+
+    <application context-root="analytics-service" id="analytics-service" location="analytics-service.war" name="AnalyticsServices" type="war">
+
+
+        <application-bnd>
+
+
+            <security-role name="worklightadmin">
+
+
+                <user name="${env.MFPF_ADMIN_USERNAME}"/>
+
+
+            </security-role>
+
+
+                <security-role name="worklightdeployer">
+
+
+                <user name="deployer"/>
+
+
+            </security-role>
+
+
+                <security-role name="worklightmonitor">
+
+
+                <user name="monitor"/>
+
+
+            </security-role>
+
+
+                <security-role name="worklightoperator">
+
+
+                <user name="operator"/>
+
+
+            </security-role>
+
+
+        </application-bnd>
+
+
+    </application>
+
+
+
+    <!--  Declare the IBM MobileFirst Analytics Console application.  -->
+
+
+    
+
+
+    <application context-root="analytics" id="analytics" location="analytics.war" name="AnalyticsUI" type="war">
+
+
+        <application-bnd>
+
+
+            <security-role name="worklightadmin">
+
+
+                <user name="${env.MFPF_ADMIN_USERNAME}"/>
+
+
+            </security-role>
+
+
+                <security-role name="worklightdeployer">
+
+
+                <user name="deployer"/>
+
+
+            </security-role>
+
+
+                <security-role name="worklightmonitor">
+
+
+                <user name="monitor"/>
+
+
+            </security-role>
+
+
+                <security-role name="worklightoperator">
+
+
+                <user name="operator"/>
+
+
+            </security-role>
+
+
+        </application-bnd>
+
+
+    </application>
+
+
+   
+
+
+    <library id="DerbyLib">
+
+
+        <fileset dir="${shared.resource.dir}/derby" includes="derby.jar"/>
+
+
+    </library>
+
+
+ 
+
+
+    <!--  Declare the IBM MobileFirst Console admin database.    -->
+
+
+    
+
+
+    <dataSource jndiName="worklightadmin/jdbc/WorklightAdminDS" transactional="false">
+
+
+        <jdbcDriver libraryRef="DerbyLib"/>
+
+
+        <properties.derby.embedded createDatabase="create" databaseName="${shared.resource.dir}/derbyDB/WLADMIN" user="WLADMINISTRATOR"/>
+
+
+    </dataSource>
+
+
+
+    <application id="_MobileBrowserSimulator" location="_MobileBrowserSimulator.war" name="_MobileBrowserSimulator" type="war"/>
+
+
+
+    <jndiEntry jndiName="wl.analytics.url" value="http://localhost:9080/analytics-service/v2"/>
+
+
+
+    <jndiEntry jndiName="wl.analytics.console.url" value="../analytics/console"/>
+
+
+
+    <jndiEntry jndiName="wl.analytics.username" value="${env.MFPF_ADMIN_USERNAME}"/>
+
+
+
+    <jndiEntry jndiName="wl.analytics.password" value="${env.MFPF_ADMIN_PASSWORD}"/>
+
+
+    
+
+
+    <jndiEntry jndiName="wl.analytics.queues" value="1"/>
+
+
+    
+
+
+    <jndiEntry jndiName="wl.analytics.queue.size" value="1"/>
+
+
+    
+
+
+    <jndiEntry jndiName="wl.analytics.logs.forward" value="true"/>
+
+
+
+    <jndiEntry jndiName="analytics/warmupFrequencyInSeconds" value="0"/>
+
+
+    
+
+
+    <jndiEntry jndiName="mfp.session.independent" value="false"/>
+
+
+    
+
+
+    <jndiEntry jndiName="development.mode" value="true"/>
+
+
+        
+
+
+    <webAppSecurity ssoUseDomainFromURL="true" />
+
+
+    <ltpa keysFileName="/opt/ibm/wlp/usr/servers/registerServer/resources/security/ltpa.keys" />  
+
+
+</server> 
